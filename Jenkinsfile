@@ -1,15 +1,19 @@
 pipeline {
-    agent any
+    // 1. ¿DÓNDE se ejecuta?
+    agent any 
+
     stages {
+        // 2. PRIMERA ETAPA: Descarga
         stage('Descargar de GitHub') {
             steps {
-                // Aquí le dices que use la configuración de Git que ya tenías
                 checkout scm
             }
         }
+
+        // 3. SEGUNDA ETAPA: Despliegue
         stage('Mover a WordPress') {
             steps {
-                sh 'cp -R * /var/www/html/wp-content/themes/tu-tema/'
+                sh 'rsync -avz --exclude=".git" . /var/www/html/wp-content/themes/tu-tema/'
             }
         }
     }
