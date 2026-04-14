@@ -1,18 +1,15 @@
 pipeline {
     agent any
-
     stages {
-        stage('Validar archivos') {
+        stage('Descargar de GitHub') {
             steps {
-                // Esto solo verifica que los archivos de WordPress estén ahí
-                sh 'ls -la'
+                // Aquí le dices que use la configuración de Git que ya tenías
+                checkout scm
             }
         }
-        stage('Desplegar') {
+        stage('Mover a WordPress') {
             steps {
-                echo 'Copiando archivos de WordPress al servidor...'
-                // Aquí pondrías el comando para mover tu carpeta a /var/www/html
-                // sh 'cp -r . /var/www/html/'
+                sh 'cp -R * /var/www/html/wp-content/themes/tu-tema/'
             }
         }
     }
