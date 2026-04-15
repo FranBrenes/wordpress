@@ -2,27 +2,39 @@ pipeline {
     agent any
     
     environment {
-        // Define aquí los datos de tu servidor de WordPress
+        // 1. Datos de conexión
         SERVER_USER = 'fran'
-        SERVER_IP   = '192.168.21.125' // La IP del Ubuntu donde está el Docker
-        DEST_PATH   = '/home/tu-usuario/mi-proyecto-wp' // Una carpeta temporal en ese Ubuntu
-        CONTAINER = 'wordpress_app' // Nombre del contendor
+        SERVER_IP   = '192.168.21.125' 
+        // 2. Ruta de la carpeta que creaste para el volumen (Ajusta la ruta según tu Ubuntu)
+        DEST_PATH   = '/home/fran/wordpress-files' 
+        // 3. Nombre del contenedor que aparece en tu docker-compose.yml
+        CONTAINER   = 'wordpress_app'
     }
 
     stages {
         stage('Enviar a Servidor Remoto') {
             steps {
-                // Enviamos los archivos de Jenkins al Ubuntu del WordPress vía SCP o Rsync
-                sh "rsync -avz --exclude='.git' . ${SERVER_USER}@${SERVER_IP}:${DEST_PATH}"
+                echo "Sincronizando archivos con el servidor..."
+                // -e 'ssh -o StrictHostKeyChecking=no' evita que Jenkins se bloquee preguntando si confía en el host
+                sh "rsync -avz -e 'ssh -o StrictHostKeyChecking=no' --exclude='.git' . ${SERVER_USER}@${SERVER_IP}:${DEST_PATH}"
             }
         }
 
         stage('Actualizar Docker') {
             steps {
-                // Si tienes los archivos bindeados (volumes), ya debería verse el cambio.
-                // Si necesitas reiniciar el contenedor para que tome cambios:
-                sh "ssh ${SERVER_USER}@${SERVER_IP} 'docker restart nombre_contenedor_wordpress'"
+                echo "Reiniciando contenedor para aplicar cambios..."
+                // Usamos la variable ${CONTAINER} definida arriba
+                sh "ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} 'docker restart ${CONTAINER}'"
             }
+        }
+    }
+    
+    post {
+        success {
+            echo "¡Despliegue completado con éxito!"
+        }
+        failure {
+            echo "Hubo un error en el despliegue. Revisa los logs de rsync o ssh."
         }
     }
 }
