@@ -5,7 +5,7 @@ pipeline {
         // Define aquí los datos de tu servidor de WordPress
         SERVER_USER = 'fran'
         SERVER_IP   = '192.168.21.110' // La IP del Ubuntu donde está el Docker
-        TEMP_PATH   = '/home/tu-usuario/mi-proyecto-wp' // Una carpeta temporal en ese Ubuntu
+        DEST_PATH   = '/home/tu-usuario/mi-proyecto-wp' // Una carpeta temporal en ese Ubuntu
         CONTAINER = 'wordpress_app' // Nombre del contendor
     }
 
