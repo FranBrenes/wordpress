@@ -69,7 +69,7 @@ Ybe8wh0aLuGvAAAAGWZyYW5AZnJhbi12aXJ0dWFsLW1hY2hpbmUB
                     
                     try {
                         // 1. Manda los archivos nuevos a la carpeta del volumen
-                        sh "rsync -avz -e 'ssh -i deploy_key -o StrictHostKeyChecking=no' --exclude='.git' . ${SERVER_USER}@${SERVER_IP}:${DEST_PATH}"
+                        sh "rsync -avz -e 'ssh -i deploy_key' . ${SERVER_USER}@${SERVER_IP}:${DEST_PATH}"
                         
                         // 2. Reinicia el contenedor para que WordPress cargue lo nuevo
                         sh "ssh -i deploy_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} 'docker restart ${CONTAINER}'"
