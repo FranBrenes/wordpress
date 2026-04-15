@@ -60,25 +60,23 @@ Ybe8wh0aLuGvAAAAGWZyYW5AZnJhbi12aXJ0dWFsLW1hY2hpbmUB
     }
 
     stages {
-        stage('Sincronizar y Actualizar Web') {
+        stage('Desplegar Cambios') {
             steps {
                 script {
-                    // Creamos el archivo de la llave temporalmente
+                    // Esto crea el archivo de la llave para que el script la use
                     writeFile file: 'deploy_key', text: env.SSH_KEY
                     sh "chmod 600 deploy_key"
                     
                     try {
-                        echo "1. Enviando cambios de código al servidor..."
-                        // rsync manda los archivos nuevos a la carpeta del volumen
+                        // 1. Manda los archivos nuevos a la carpeta del volumen
                         sh "rsync -avz -e 'ssh -i deploy_key -o StrictHostKeyChecking=no' --exclude='.git' . ${SERVER_USER}@${SERVER_IP}:${DEST_PATH}"
                         
-                        echo "2. Reiniciando WordPress para aplicar cambios..."
-                        // Reiniciamos el contenedor para que refresque el contenido
+                        // 2. Reinicia el contenedor para que WordPress cargue lo nuevo
                         sh "ssh -i deploy_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} 'docker restart ${CONTAINER}'"
                         
-                        echo "¡Web actualizada!"
+                        echo "¡Actualización completada!"
                     } finally {
-                        // Borramos la llave por seguridad
+                        // Borra la llave para no dejar basura
                         sh "rm -f deploy_key"
                     }
                 }
