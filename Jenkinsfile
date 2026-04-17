@@ -4,7 +4,6 @@ pipeline {
     environment {
         SERVER_USER = 'fran'
         SERVER_IP   = '192.168.21.125'
-        // Esta es la carpeta que pusiste en el volumen de Docker (- ./wordpress-files:/var/www/html)
         DEST_PATH   = '/home/fran/wordpress-files'
         CONTAINER   = 'wordpress_app'
         SSH_KEY     = '''-----BEGIN OPENSSH PRIVATE KEY-----
@@ -56,28 +55,42 @@ wQawK6y+GBA5icmb7/cpg9gF8tDRlxDcCG8xEBhy3URpb24t4IUXEkqWe4lJGhNcFDoGFh
 YjrEqW8EF7if9evcTHKRDQ9Bc0Rw/i3BoWs3tCwDsRlisCpXW9OBdD5U9JVAfYTZeMhQ4M
 Ybe8wh0aLuGvAAAAGWZyYW5AZnJhbi12aXJ0dWFsLW1hY2hpbmUB
 -----END OPENSSH PRIVATE KEY-----
-
 '''
     }
 
     stages {
+        stage('Análisis con SonarQube') {
+            steps {
+                script {
+                    // Localiza la herramienta SonarScanner en Jenkins
+                    def scannerHome = tool 'SonarScanner'
+                    
+                    // Envía el código al servidor configurado en Jenkins
+                    withSonarQubeEnv('SonarQubeServer') {
+                        sh "${scannerHome}/bin/sonar-scanner " +
+                           "-Dsonar.projectKey=wordpress-plugin-vulnerable " +
+                           "-Dsonar.sources=. " +
+                           "-Dsonar.php.exclusions=**/vendor/**"
+                    }
+                }
+            }
+        }
+
         stage('Desplegar Cambios') {
             steps {
                 script {
-                    // Esto crea el archivo de la llave para que el script la use
                     writeFile file: 'deploy_key', text: env.SSH_KEY
                     sh "chmod 600 deploy_key"
                     
                     try {
-                        // 1. Manda los archivos nuevos a la carpeta del volumen
-                        sh "rsync -avz -e 'ssh -i deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' --exclude='.git' . fran@192.168.21.125:/home/fran/wordpress-files"
+                        // 1. Manda los archivos nuevos a la máquina de WordPress
+                        sh "rsync -avz -e 'ssh -i deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' --exclude='.git' . ${SERVER_USER}@${SERVER_IP}:${DEST_PATH}"
                         
-                        // 2. Reinicia el contenedor para que WordPress cargue lo nuevo
+                        // 2. Reinicia el contenedor en la máquina remota
                         sh "ssh -i deploy_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} 'docker restart ${CONTAINER}'"
                         
-                        echo "¡Actualización completada!"
+                        echo "¡Análisis completado y cambios desplegados!"
                     } finally {
-                        // Borra la llave para no dejar basura
                         sh "rm -f deploy_key"
                     }
                 }
