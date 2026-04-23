@@ -4,7 +4,7 @@ pipeline {
     environment {
         SERVER_USER = 'fran'
         SERVER_IP   = '192.168.21.125'
-        DEST_PATH   = '/home/fran/wordpress-files/_data'
+        DEST_PATH   = '/home/fran/wordpress-files/'
         CONTAINER   = 'wordpress_app'
         SSH_KEY     = '''-----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn
