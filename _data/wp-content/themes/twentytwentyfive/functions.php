@@ -163,4 +163,5 @@ if ( ! function_exists( 'twentytwentyfive_format_binding' ) ) :
 			return get_post_format_string( $post_format_slug );
 		}
 	}
+	esto es el fallo;
 endif;
