@@ -84,9 +84,11 @@ Ybe8wh0aLuGvAAAAGWZyYW5AZnJhbi12aXJ0dWFsLW1hY2hpbmUB
                     
                     try {
                         // 1. Manda los archivos nuevos a la máquina de WordPress
-                        sh "rsync -avz -e 'ssh -i deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' --exclude='.git' . ${SERVER_USER}@${SERVER_IP}:${DEST_PATH}"
+                        sh "rsync -avz --delete -e 'ssh -i deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' --exclude='.git' ./ ${SERVER_USER}@${SERVER_IP}:${DEST_PATH}/"
                         
                         // 2. Reinicia el contenedor en la máquina remota
+                        sh "ssh -i deploy_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} 'sudo chown -R 33:33 ${DEST_PATH}'"
+
                         sh "ssh -i deploy_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} 'docker restart ${CONTAINER}'"
                         
                         echo "¡Análisis completado y cambios desplegados!"
